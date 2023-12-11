@@ -83,6 +83,39 @@ class AmedasNode():
     def __str__(self) -> str:
         return f"{self.prec_no}{self.block_no} : {self.name} {self.yomi}"
     
+    def print_detail(self):
+        print(f"Location Name   :   {self.name} （{self.yomi}）")
+        print(f"Group Name      :   {self.group_name}")
+        print(f"Prec Number     :   {self.prec_no}")
+        print(f"Block Number    :   {self.block_no}")
+        if self.obstype == "a":
+            print("Observation Type:   AMeDAS")
+        elif self.obstype == "s":
+            print("Observation Type:   Weather Station")
+        print(f"Coordinate Lat  :   N  {self.lat_d}° {self.lat_m}′")
+        print(f"Coordinate Long :   E {self.lon_d}° {self.lon_m}′")
+        print(f"Elevation       :   {self.elev}m")
+        print(f"Obs Temperature :   {self.temp}")
+        print(f"Obs Rain        :   {self.rain}")
+        print(f"Obs WindSpeed   :   {self.wind}")
+        print(f"Obs Humid       :   {self.hum}")
+        print(f"Obs Sun         :   {self.sun}")
+        print(f"Obs Snow        :   {self.snow}")
+        if self.ed_y == 9999 or self.ed_m == 9999 or self.ed_d == 9999:
+            print("State           :   Continue")
+        else:
+            print(f"State           :   Stop at {self.ed_y}/{self.ed_m}/{self.ed_d}")
+        if self.bikou1:
+            print(f"Note1           :   {self.bikou1}")
+        if self.bikou2:
+            print(f"Note2           :   {self.bikou2}")
+        if self.bikou3:
+            print(f"Note3           :   {self.bikou3}")
+        if self.bikou4:
+            print(f"Note4           :   {self.bikou4}")
+        if self.bikou5:
+            print(f"Note5           :   {self.bikou5}")
+    
     @classmethod
     def load(cls, d: dict):
         tlist = []
@@ -284,3 +317,4 @@ if __name__ == '__main__':
     print(r)
     dt = datetime.datetime.now() - datetime.timedelta(days=1)
     print(r.url(AmedasDataType.TENMINUTES, dt))
+    print(r.print_detail())

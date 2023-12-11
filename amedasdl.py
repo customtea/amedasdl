@@ -100,6 +100,12 @@ Notes:
                         default=None,
                         help='観測地点一覧を出力')
 
+    parser.add_argument('-d','--detail',
+                                    nargs="?",
+                                    type=str,
+                                    metavar="Block Number",
+                                    default=None,
+                                    help="観測地点番号からamedas.jsonの詳細情報を取得する")
 
     parser.add_argument('--version', action='version', version=version())
     return parser.parse_args()
@@ -114,6 +120,14 @@ if __name__ == '__main__':
     if opt.list:
         for a in ams.list():
             print(a)
+        sys.exit(0)
+    
+    if opt.detail:
+        a = ams.search_blockno(opt.detail)
+        if a is None:
+            print(f"Not Found ID:{opt.detail}")
+            sys.exit(1)
+        a.print_detail()
         sys.exit(0)
     
     if opt.search:
