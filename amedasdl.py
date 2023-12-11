@@ -45,7 +45,7 @@ Notes:
 """,
     )
     loc_select_group = parser.add_argument_group("ObsSelect")
-    loc_select_group = parser.add_mutually_exclusive_group(required=True)
+    loc_select_group = parser.add_mutually_exclusive_group()
     loc_select_group.add_argument("--search",
                         type=str,
                         metavar="Location Name for Search",
@@ -59,13 +59,13 @@ Notes:
     loc_select_group.add_argument('-n', '--name',
                                     nargs="?",
                                     type=str,
-                                    metavar="LocationName",
+                                    metavar="Location Name",
                                     default=None, 
                                     help='観測地点名 カンマ区切り（スペース不可）で複数指定可能')
-    loc_select_group.add_argument('-i','--oid',
+    loc_select_group.add_argument('-i','--bid',
                                     nargs="?",
                                     type=str,
-                                    metavar="Observation ID",
+                                    metavar="Block Number",
                                     default=None,
                                     help="観測地点番号 カンマ区切り（スペース不可）で複数指定可能")
 
@@ -148,10 +148,10 @@ if __name__ == '__main__':
                 new_keyword = input(f"> {keyword}")
                 keyword += new_keyword.strip()
             target = suggestions[0]
-            toid = name2id[target]
+            tbid = name2id[target]
         yn = input("Download This Location Data? y/n  ")
         if yn == "y":
-            locations.append(ams.search_oid(toid))
+            locations.append(ams.search_blockno(tbid))
             pass
         else:
             sys.exit()
@@ -166,15 +166,18 @@ if __name__ == '__main__':
             else:
                 locations.append(a)
 
-    if opt.oid:
-        soid = opt.oid.split(",")
-        # print(soid)
-        for oid in soid:
-            a = ams.search_oid(oid)
+    if opt.bid:
+        sbid = opt.bid.split(",")
+        # print(sbid)
+        for bid in sbid:
+            a = ams.search_blockno(bid)
             if a is None:
-                print(f"Not Found ID:{oid}")
+                print(f"Not Found ID:{bid}")
             else:
                 locations.append(a)
+    if len(locations) < 1:
+        print("No Location")
+        sys.exit(1)
 
     if opt.dtype:
         sdytpe = opt.dtype.split(",")

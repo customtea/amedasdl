@@ -13,13 +13,6 @@ class AmedasError(BaseException): pass
 
 AMEDAS_BASEURL = "https://www.data.jma.go.jp/obd/stats/etrn/view/"
 
-class AmedasType(str, Enum):
-    AUTO4       = "auto4"
-    AUTO3       = "auto3"
-    KAN         = "Kan"
-    AUTORAIN    = "autorain"
-    AUTOSNOW    = "autosnow"
-
 class AmedasDataType(str, Enum):
     """AMeDAS Site Support Data Type
     """
@@ -59,89 +52,44 @@ class AmedasDataType(str, Enum):
 class AmedasNode():
     """Amedas Node
     """
-    def __init__(self, oid: str, prec_no: str, block_no: str, name: str, group_name: str, lat: str, long: str, elev: str, obstype:str) -> None:
-        """Init
+    def __init__(self, obstype, prec_no, block_no, name, yomi, group_name, lat_d, lat_m, lon_d, lon_m, elev, rain, wind, temp, sun, snow, hum, ed_y, ed_m, ed_d, bikou1, bikou2, bikou3, bikou4, bikou5) -> None:
+        self.prec_no = prec_no
+        self.block_no = block_no
+        self.obstype = obstype
+        self.name = name
+        self.yomi = yomi
+        self.group_name = group_name
+        self.lat_d = lat_d
+        self.lat_m = lat_m
+        self.lon_d = lon_d
+        self.lon_m = lon_m
+        self.elev = elev
+        self.rain = int(rain)
+        self.wind = int(wind)
+        self.temp = int(temp)
+        self.sun = int(sun)
+        self.snow = int(snow)
+        self.hum = int(hum)
+        self.ed_y = int(ed_y)
+        self.ed_m = int(ed_m)
+        self.ed_d = int(ed_d)
+        self.bikou1 = bikou1
+        self.bikou2 = bikou2
+        self.bikou3 = bikou3
+        self.bikou4 = bikou4
+        self.bikou5 = bikou5
 
-        Parameters
-        ----------
-        oid : str
-            Observation ID
-        prec_no : str
-            District Number
-        block_no : str
-            Block Number (uniq)
-        name : str
-            Name
-        group_name : str
-            District Group Name
-        lat : str
-            Latitude
-        long : str
-            Longitude
-        elev : str
-            Elevation
-        obstype: str
-            Observation Type
-            
-        Attributes
-        ----------
-        _oid : int or None
-            Observation ID
-        _prec_no : str
-            District Number
-        _block_no : str
-            Block Number (uniq)
-        _name : str
-            Name
-        _group_name : str
-            District Group Name
-        _lat : float
-            Latitude
-        _long : float
-            Longitude
-        _elev : float
-            Elevation
-        _url_spec: str
-            URL Spec
-        """
-        if oid is not None:
-            self._oid = int(oid)
-        else:
-            self._oid = None
-        self._prec_no = prec_no
-        self._block_no = block_no
-        self._name = name
-        self._group_name = group_name
-        self._lat = float(lat)
-        self._long = float(long)
-        self._elev = float(elev)
-        self._obstype = AmedasType(obstype)
-        self._url_spec = None
-
-        if self._block_no != "NoRegist":
-            if int(self._block_no) < 10000:
-                self._url_part = "a"
-            else:
-                self._url_part = "s"
     
     def __str__(self) -> str:
-        return f"{self._oid} : {self._name}"
+        return f"{self.prec_no}{self.block_no} : {self.name} {self.yomi}"
     
     @classmethod
     def load(cls, d: dict):
-        oid = d["oid"]
-        prec_no = d["prec_no"]
-        block_no = d["block_no"]
-        name = d["name"]
-        gname = d["group_name"]
-        lat = d["lat"]
-        long = d["long"]
-        elev = d["elev"]
-        if not "obstype" in d:
-            obstype = "Kan"
-        else:
-            obstype = d["obstype"]
-        return cls(oid, prec_no, block_no, name, gname, lat, long, elev, obstype)
+        tlist = []
+        for key in ["obstype", "prec_no", "block_no", "name", "yomi", "group_name", "lat_d", "lat_m", "lon_d", "lon_m", "elev", "rain", "wind", "temp", "sun", "snow", "hum", "ed_y", "ed_m", "ed_d", "bikou1", "bikou2", "bikou3", "bikou4", "bikou5" ]:
+            tlist.append(d[key])
+
+        return cls(*tlist)
     
     def url(self, dtype: AmedasDataType, date: datetime.date) -> str:
         """Generate Access URL
@@ -165,16 +113,16 @@ class AmedasNode():
         """ 
         if not self.__valid_date(date):
             raise AmedasError("[WARNING] NOT Use today in date")
-        if self._block_no == "NoRegist":
+        if self.block_no == "NoRegist":
             raise AmedasError("This Observation still not registed reference json. Please Create Issue for Github Repository")
         url = AMEDAS_BASEURL
-        if self._url_spec == "a":
+        if self.obstype == "a":
             url += dtype.a()
         else:
             url += dtype.s()
         url += ".php?"
-        url += "prec_no=" + self._prec_no
-        url += "&block_no=" + self._block_no
+        url += "prec_no=" + self.prec_no
+        url += "&block_no=" + self.block_no
         url += "&year=" + str(date.year)
         url += "&month=" + date.strftime("%m")
         url += "&day=" + date.strftime("%d")
@@ -258,7 +206,7 @@ class AmedasNode():
         pathlib.Path
             dirpath
         """
-        droot = Path(f"./data/{self._block_no}_{self._group_name}_{self._name}")
+        droot = Path(f"./data/{self.block_no}_{self.group_name}_{self.name}")
         year_dir = Path(date.strftime("%Y"))
         month_dir = Path(date.strftime("%m"))
         day_dir = Path(date.strftime("%d"))
@@ -278,7 +226,7 @@ class AmedasNode():
         str
             file name
         """
-        return f"{date.strftime('%Y%m%d')}_{self._block_no}_{dtype.name}"
+        return f"{date.strftime('%Y%m%d')}_{self.block_no}_{dtype.name}"
     
 
     def save_html(self, dtype: AmedasDataType, date: datetime.date) -> None:
@@ -321,18 +269,18 @@ class Amedas():
 
     def search_blockno(self, blockno):
         for ams in self.amedas_nodes.values():
-            if ams._block_no == blockno:
+            if ams.block_no == blockno:
                 return ams
 
     def search_name(self, name):
         for ams in self.amedas_nodes.values():
-            if ams._name == name:
+            if ams.name == name:
                 return ams
 
 
 if __name__ == '__main__':
     ams = Amedas()
-    r = ams.search_oid("67437")
+    r = ams.search_blockno("47765")
     print(r)
     dt = datetime.datetime.now() - datetime.timedelta(days=1)
     print(r.url(AmedasDataType.TENMINUTES, dt))

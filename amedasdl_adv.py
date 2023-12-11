@@ -1,4 +1,4 @@
-from amedasdl_core import Amedas, AmedasNode, AmedasDataType, AmedasType
+from amedasdl_core import Amedas, AmedasNode, AmedasDataType
 import typing
 from bs4 import BeautifulSoup
 import csv
@@ -13,37 +13,25 @@ table_infos = {
     AmedasDataType.HOUR : { "tablename" : "tablefix1", "tablenum" : 0, }
 }
 
-csv_headers: dict[AmedasDataType, dict[AmedasType, list[str]]] = {
+csv_headers: dict[AmedasDataType, dict[str, list[str]]] = {
     AmedasDataType.TENMINUTES:{
-        AmedasType.KAN : ["時分","現地気圧(hPa)","海面気圧(hPa)","降水量(mm)","気温(℃)","相対湿度(％)","平均風速(m/s)","平均風向","最大瞬間風速(m/s)","最大瞬間風向","日照時間(分)"],
-        AmedasType.AUTO4 : ["時分","降水量(mm)","気温(℃)","相対湿度（%）","平均風速(m/s)","平均風向","最大瞬間風速(m/s)","最大瞬間風向","日照時間(分)"],
-        AmedasType.AUTO3: [],   # ToDo
-        AmedasType.AUTORAIN: [],# ToDo
-        AmedasType.AUTOSNOW: [] # ToDo
+        "s" : ["時分","現地気圧(hPa)","海面気圧(hPa)","降水量(mm)","気温(℃)","相対湿度(％)","平均風速(m/s)","平均風向","最大瞬間風速(m/s)","最大瞬間風向","日照時間(分)"],
+        "s" : ["時分","降水量(mm)","気温(℃)","相対湿度（%）","平均風速(m/s)","平均風向","最大瞬間風速(m/s)","最大瞬間風向","日照時間(分)"],
     },
     AmedasDataType.HOUR:{
-        AmedasType.KAN : ["時","現地気圧(hPa)","海面気圧(hPa)","降水量(mm)","気温(℃)","露点温度(℃)","蒸気圧(hPa)","湿度(％)","風速(m/s)","風向","日照時間(h)","全天日射量(MJ/m^2)","降雪(cm)","積雪(cm)", "天気記号", "雲量", "視程(km)"],
-        AmedasType.AUTO4 : ["時","降水量(mm)","気温(℃)","露点温度(℃)","蒸気圧(hPa)","湿度(％)","平均風速(m/s)","風向","日照時間(h)","降雪(cm)","積雪(cm)"],
-        AmedasType.AUTO3: [],   # ToDo
-        AmedasType.AUTORAIN: [],# ToDo
-        AmedasType.AUTOSNOW: [] # ToDo
+        "s" : ["時","現地気圧(hPa)","海面気圧(hPa)","降水量(mm)","気温(℃)","露点温度(℃)","蒸気圧(hPa)","湿度(％)","風速(m/s)","風向","日照時間(h)","全天日射量(MJ/m^2)","降雪(cm)","積雪(cm)", "天気記号", "雲量", "視程(km)"],
+        "a" : ["時","降水量(mm)","気温(℃)","露点温度(℃)","蒸気圧(hPa)","湿度(％)","平均風速(m/s)","風向","日照時間(h)","降雪(cm)","積雪(cm)"],
     }
 }
 
-parse_header_nums: dict[AmedasDataType, dict[AmedasType, int]] = {
+parse_header_nums: dict[AmedasDataType, dict[str, int]] = {
     AmedasDataType.TENMINUTES:{
-        AmedasType.KAN : 2,
-        AmedasType.AUTO4: 3,
-        AmedasType.AUTO3: 0,    # ToDo
-        AmedasType.AUTORAIN: 0, # ToDo
-        AmedasType.AUTOSNOW: 0  # ToDo
+        "s" : 2,
+        "a" : 3,
     },
     AmedasDataType.HOUR:{
-        AmedasType.KAN : 2,
-        AmedasType.AUTO4: 2,
-        AmedasType.AUTO3: 0,    # ToDo
-        AmedasType.AUTORAIN: 0, # ToDo
-        AmedasType.AUTOSNOW: 0  # ToDo
+        "s" : 2,
+        "a" : 2,
     }
 }
 
@@ -77,8 +65,8 @@ class AMeDASNode(AmedasNode):
         
         tb_name = table_infos[dtype]["tablename"]
         tb_numer = table_infos[dtype]["tablenum"]
-        headernum = parse_header_nums[dtype][self._obstype]
-        header = csv_headers[dtype][self._obstype]
+        headernum = parse_header_nums[dtype][self.obstype]
+        header = csv_headers[dtype][self.obstype]
         if len(header) == 0:
             print("[Info] This Header Type is not Implement")
         table = self.parse_table_to_list(html, tb_name, headernum, tb_numer)
@@ -132,9 +120,9 @@ class AMeDAS(Amedas):
         sug_list = []
         name2id = {}
         for am in self.amedas_nodes.values():
-            name = f"{am._group_name}{am._name}"
+            name = f"{am.group_name}{am.name}"
             sug_list.append(name)
-            name2id[name] = am._oid
+            name2id[name] = am.block_no
         return sug_list, name2id
 
 
