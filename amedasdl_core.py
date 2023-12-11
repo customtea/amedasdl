@@ -336,7 +336,3 @@ if __name__ == '__main__':
     print(r)
     dt = datetime.datetime.now() - datetime.timedelta(days=1)
     print(r.url(AmedasDataType.TENMINUTES, dt))
-    # for k,v in ams.amedas_d.items():
-    #     print(k, v)
-    # print(dir(AMeDASDataType))
-    # print(dir(AMeDASDataType.Annual))
