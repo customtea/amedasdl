@@ -2,3 +2,4 @@ data
 _work
 update
 __pycache__
+*.html

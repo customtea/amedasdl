@@ -1,19 +1,7 @@
 import json
 from bs4 import BeautifulSoup
 import urllib.parse
-import time
-import requests
 
-BASEURL = "https://www.data.jma.go.jp/obd/stats/etrn/select/prefecture.php?prec_no="
-
-def get_district_html(key):
-    url = BASEURL + key
-    print(url)
-    response = requests.get(url)
-    time.sleep(1)
-    response.encoding = "utf-8"
-    html = response.text
-    return html
 
 class ObsPoint():
     def __init__(self, aors, bk_no, ch, ch_kn, lat_d, lat_m, lon_d, lon_m, height, f_pre, f_wsp, f_tem, f_sun, f_snc, f_hum, ed_y, ed_m, ed_d, bikou1, bikou2, bikou3, bikou4, bikou5)-> None:
@@ -49,14 +37,6 @@ class ObsPoint():
     def dict(self):
         return self.__dict__
         
-
-
-amedas_d: dict[str, ObsPoint] = {}
-district_d: dict[str, str] = {}
-with open("district.json")as f:
-    district_d = json.load(f)
-
-
 def parse_mouseover_js(text: str):
     prefix = "javascript:viewPoint("
     sufix = ");"
@@ -68,7 +48,8 @@ def parse_mouseover_js(text: str):
     return d
 
 
-def parse_html(html):
+def parse_node_html(html, group_d):
+    tmp_d = {}
     soup = BeautifulSoup(html, "html.parser")
     map = soup.findAll("map")[0]
     for area in map.findAll("area"):
@@ -86,13 +67,14 @@ def parse_html(html):
         node = parse_mouseover_js(mouseover_js)
         prec_no = querry["prec_no"][0]
         node.prec_no = prec_no
-        node.group_name = district_d[prec_no]
+        node.group_name = group_d[prec_no]
         yomi = fix_yomi(int(node.block_no))
         if not yomi is None:
             node.yomi = yomi
         # print(node)
         key = f"{node.prec_no}{node.block_no}"
-        amedas_d[key] = node
+        tmp_d[key] = node
+    return tmp_d
 
 
 def fix_yomi(bk_no):
@@ -124,9 +106,15 @@ def fix_yomi(bk_no):
 
 
 def main():
-    for num, name in district_d.items():
-        html = get_district_html(num)
-        parse_html(html)
+    amedas_d: dict[str, ObsPoint] = {}
+    group_d: dict[str, str] = {}
+    with open("group.json")as f:
+        group_d = json.load(f)
+
+    for num, name in group_d.items():
+        with open(f"./group/{num}_{name}.html") as f:
+            html = f.read()
+            parse_node_html(html, group_d)
     
     td = {}
     for k, a in amedas_d.items():
@@ -134,6 +122,10 @@ def main():
     
     with open("amedas.json", "w") as f:
         json.dump(td, f, indent=4, ensure_ascii=False)
+    
+    with open("amedas_json.py", "w") as f:
+        f.write("amedas_json = ")
+        f.write(json.dumps(td, ensure_ascii=False))
 
 
 
