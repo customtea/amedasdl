@@ -1,5 +1,5 @@
 # AMeDAS Downloader
-気象庁のAMeDASデータをページをスクレイピングしてデータを取得するプログラム
+気象庁のAMeDASデータページをスクレイピングしてデータを取得するプログラム
 
 ## Require
 - requests
@@ -12,7 +12,7 @@
   - CUI
   - CSVをデフォルトで出力する
   ```
-  usage: amedasdl.py [-h] (--search Location Name for Search | --isearch Location Name for Search | -n [LocationName] | -i [Observation ID]) [-o [Output Format]] [-t [DataType]]
+  usage: amedasdl.py [-h] [--search Location Name for Search | --isearch Location Name for Search | -n [Location Name] | -i [Block Number]] [-o [Output Format]] [-t [DataType]]
                     [-s StartDate] [-e EndDate] [-l] [--version]
 
   Notes: [WARNING] AMeDAS Data CANNOT download same day's
@@ -23,9 +23,9 @@
                           観測地点名を検索する
     --isearch Location Name for Search
                           観測地点名を逐次検索する対話インターフェス
-    -n [LocationName], --name [LocationName]
+    -n [Location Name], --name [Location Name]
                           観測地点名 カンマ区切り（スペース不可）で複数指定可能
-    -i [Observation ID], --oid [Observation ID]
+    -i [Block Number], --bid [Block Number]
                           観測地点番号 カンマ区切り（スペース不可）で複数指定可能
     -s StartDate, --start StartDate
                           開始日時 YYYYMMDD形式
